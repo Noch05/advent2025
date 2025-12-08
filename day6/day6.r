@@ -29,36 +29,22 @@ print(part1)
 
 ## Part 2
 input <- readr::read_lines("day6/input.txt")
-operators <- input[[5]] |> strsplit("")
-operators <- operators[[1]][operators[[1]] %in% c("*", "+")]
+operators <- strsplit(input[[5]], "")[[1]]
+operators <- operators[operators %in% c("*", "+")]
+
 exprs2 <- input[-5] |>
   strsplit("") |>
   unlist() |>
-  matrix(nrow = nchar(input[[1]]), byrow = TRUE) |>
-  apply(2, paste, collapse = "")
+  matrix(ncol = nchar(input[[1]]), byrow = TRUE) |>
+  apply(2, paste, collapse = "") |>
+  as.numeric()
 
-
-exalign_num <- function(x, align) {
-  n <- max(nchar(x))
-  x <- vapply(x, FUN.VALUE = character(1), \(num) {
-    pad <- n - nchar(num)
-    padding <- paste(rep(" ", pad), collapse = "")
-    paste0(padding, num)
-  })
-  names(x) <- NULL
-  return(x)
-}
-col_num <- function(x) {
-  x <- x[x != " "]
-  num <- 0
-  for (i in seq_along(x)) {
-    num <- num + (as.numeric(x[i]) * 10^(length(x) - i))
-  }
-  return(num)
-}
-transpose <- function(x) {
-  op <- x[length(x)]
-  x_list <- align_num(x[-(length(x))]) |> strsplit("")
-  x_t <- do.call(rbind, x_list) |> apply(2, col_num)
-  return(c(x_t, op))
-}
+part2 <- split(nums, cumsum(is.na(nums))) |>
+  lapply(\(x) x[!is.na(x)]) |>
+  purrr::map2(operators, \(x, y) {
+    x[length(x) + 1] <- y
+    return(x)
+  }) |>
+  vapply(cephalopod_math, FUN.VALUE = numeric(1)) |>
+  sum()
+print(part2)
